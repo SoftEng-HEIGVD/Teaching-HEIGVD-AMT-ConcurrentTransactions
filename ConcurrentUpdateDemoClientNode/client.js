@@ -61,11 +61,11 @@ function getTransactionPOSTRequestFunction(accountId) {
 				'amount': 0 // we will generate a random value below
 			},
 			requestConfig:{
-				'timeout' : 5000,
+				'timeout' : 10000,
 				keepAlive:false
 			},
 			responseConfig:{
-				'timeout' : 5000				
+				'timeout' : 10000				
 			}
 		};
 		

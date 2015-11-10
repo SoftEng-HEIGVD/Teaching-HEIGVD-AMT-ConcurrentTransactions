@@ -30,6 +30,7 @@ public class TransactionProcessor implements TransactionProcessorLocal {
   EntityManager em;
 
   @Override
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   public void processTransaction(TransactionDTO transaction) {
 
     /*
