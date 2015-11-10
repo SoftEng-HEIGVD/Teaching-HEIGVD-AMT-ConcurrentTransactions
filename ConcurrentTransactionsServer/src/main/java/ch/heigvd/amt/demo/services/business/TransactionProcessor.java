@@ -23,24 +23,31 @@ public class TransactionProcessor implements TransactionProcessorLocal {
   @EJB
   AccountDAOLocal accountDAO;
 
+  @EJB
+  TransactionProcessorLocal selfViaContainer;
+
   @PersistenceContext
   EntityManager em;
 
   @Override
   public void processTransaction(TransactionDTO transaction) {
-    
+
     /*
      * If this is the first financial transaction for this account, we need
      * to create it.
      */
-    createAccountIfNotExists(transaction.getAccountId());
-    
+    try {
+      selfViaContainer.createAccountIfNotExists(transaction.getAccountId());
+    } catch (Exception e) {
+      LOG.info("*** An exception has occurred during account creation... maybe a DUPLICATE KEY that would not be a real problem..." + e.getMessage());
+    }
+
     /*
      * Try the difference between findByIdForUpdate, which locks the account record
      * and findById, which does not.
      */
     Account account = accountDAO.findById(transaction.getAccountId());
-    
+
     double bal = account.getBalance();
     bal = bal + transaction.getAmount();
     account.setBalance(bal);
@@ -50,6 +57,7 @@ public class TransactionProcessor implements TransactionProcessorLocal {
   }
 
   @Override
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   public void createAccountIfNotExists(long id) {
     Account account = accountDAO.findById(id);
     if (account == null) {
@@ -60,19 +68,17 @@ public class TransactionProcessor implements TransactionProcessorLocal {
       account.setHolderName(generateRandomHolderName());
       accountDAO.create(account);
     }
-
   }
-  
+
   private String generateRandomHolderName() {
     String[] firstNames = {"John", "Carla", "Hans", "Yuki", "Sacha", "Tomoe", "Bernard", "Heinz", "Kurt", "Dani"};
     String[] lastNames = {"Smith", "Mueller", "Jones", "Dupond", "Martin", "Baecker", "Braig", "Ichikawa", "Nomura", "Simpson"};
     return pickRandomArrayItem(firstNames) + " " + pickRandomArrayItem(lastNames);
   }
-  
+
   private Object pickRandomArrayItem(Object[] array) {
-    int index = (int)(Math.random() * array.length);
+    int index = (int) (Math.random() * array.length);
     return array[index];
   }
-  
 
 }
