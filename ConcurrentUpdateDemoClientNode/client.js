@@ -10,13 +10,13 @@ var http = require('http');
  * words, if it is equal to 1, then requests will be sent one by one (no concurrency on the server because
  * of this test client). The higher the number, the higher the concurrency.
  */
-http.globalAgent.maxSockets = 1;
+http.globalAgent.maxSockets = 15;
 
 /*
  * This parameters are used to control the experiments and specify how much data we want to create.
  */
-var numberOfAccounts = 10;
-var numberOfTransactionsPerAccount = 20;
+var numberOfAccounts = 20;
+var numberOfTransactionsPerAccount = 40;
 
 /*
  * This map keeps track of the transactions posted by the client, 

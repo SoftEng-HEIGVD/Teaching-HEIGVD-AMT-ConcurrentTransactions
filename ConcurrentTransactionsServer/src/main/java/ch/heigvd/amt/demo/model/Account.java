@@ -2,6 +2,7 @@ package ch.heigvd.amt.demo.model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 
@@ -15,6 +16,7 @@ import javax.persistence.NamedQuery;
     @NamedQuery(name="Account.findAll", query="SELECT a FROM Account a"),
     @NamedQuery(name="Account.deleteAll", query="DELETE FROM Account")
 })
+@NamedNativeQuery(name = "Account.upsert", query = "INSERT INTO Account (ID, HOLDERNAME, BALANCE, NUMBEROFTRANSACTIONS) VALUES (?1, ?2, ?3, ?4) ON DUPLICATE KEY UPDATE BALANCE=BALANCE+?4, NUMBEROFTRANSACTIONS=NUMBEROFTRANSACTIONS+0") 
 public class Account {
   
   @Id

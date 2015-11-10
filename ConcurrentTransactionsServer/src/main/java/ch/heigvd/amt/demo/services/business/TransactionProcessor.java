@@ -10,6 +10,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 /**
  *
@@ -23,9 +24,6 @@ public class TransactionProcessor implements TransactionProcessorLocal {
   @EJB
   AccountDAOLocal accountDAO;
 
-  @EJB
-  TransactionProcessorLocal selfViaContainer;
-
   @PersistenceContext
   EntityManager em;
 
@@ -36,11 +34,7 @@ public class TransactionProcessor implements TransactionProcessorLocal {
      * If this is the first financial transaction for this account, we need
      * to create it.
      */
-    try {
-      selfViaContainer.createAccountIfNotExists(transaction.getAccountId());
-    } catch (Exception e) {
-      LOG.info("*** An exception has occurred during account creation... maybe a DUPLICATE KEY that would not be a real problem..." + e.getMessage());
-    }
+    createAccountIfNotExists(transaction.getAccountId());
 
     /*
      * Try the difference between findByIdForUpdate, which locks the account record
@@ -53,21 +47,16 @@ public class TransactionProcessor implements TransactionProcessorLocal {
     account.setBalance(bal);
     account.setNumberOfTransactions(account.getNumberOfTransactions() + 1);
     LOG.info("*** Updating account: " + account.getId() + " - " + account.getNumberOfTransactions());
-
   }
 
   @Override
-  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   public void createAccountIfNotExists(long id) {
-    Account account = accountDAO.findById(id);
-    if (account == null) {
-      account = new Account();
-      account.setId(id);
-      account.setBalance(0);
-      account.setNumberOfTransactions(0);
-      account.setHolderName(generateRandomHolderName());
-      accountDAO.create(account);
-    }
+   Query query = em.createNamedQuery("Account.upsert");
+    query.setParameter(1, id);
+    query.setParameter(2, generateRandomHolderName());
+    query.setParameter(3, 0);
+    query.setParameter(4, 0);
+    long result = query.executeUpdate();
   }
 
   private String generateRandomHolderName() {
