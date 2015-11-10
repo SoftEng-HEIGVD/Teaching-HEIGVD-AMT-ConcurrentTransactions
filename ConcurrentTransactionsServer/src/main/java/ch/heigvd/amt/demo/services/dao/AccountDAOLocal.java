@@ -21,4 +21,6 @@ public interface AccountDAOLocal {
 
   void deleteAll();
   
+  Account findByIdForUpdate(long id);
+
 }

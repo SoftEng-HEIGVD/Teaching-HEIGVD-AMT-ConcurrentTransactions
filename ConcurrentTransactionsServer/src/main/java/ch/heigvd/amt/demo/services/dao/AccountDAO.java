@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -34,6 +35,11 @@ public class AccountDAO implements AccountDAOLocal {
   @Override
   public Account findById(long id) {
     return em.find(Account.class, id);
+  }
+
+  @Override
+  public Account findByIdForUpdate(long id) {
+    return em.find(Account.class, id, LockModeType.PESSIMISTIC_WRITE);
   }
 
   @Override
